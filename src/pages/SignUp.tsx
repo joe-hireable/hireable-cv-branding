@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import HireableLogo from "@/components/branding/HireableLogo";
-import { supabase } from "@/lib/supabase";
+import { supabase, supabaseUrl, supabaseAnonKey } from "@/lib/supabase";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -28,7 +28,6 @@ const SignUp = () => {
 
     try {
       // Check if we're using fallback values (development mode)
-      // Instead of directly accessing the protected url property, use the supabaseUrl from our lib file
       if (supabaseUrl.includes('your-project-url')) {
         toast.error("Cannot connect to Supabase with placeholder credentials. Please set up your .env file with real Supabase credentials.");
         console.error("Using placeholder Supabase credentials. Please set up your .env file with real Supabase credentials.");
