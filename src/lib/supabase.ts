@@ -2,18 +2,27 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from '@/types/supabase';
 
-// Using fallback values for development mode
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://your-project-url.supabase.co';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'your-anon-key';
+// Check if environment variables are available
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-if (!import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY) {
-  console.warn(
-    '⚠️ Supabase environment variables are missing! ⚠️\n' +
-    'Please create a .env file in the project root with:\n' +
-    'VITE_SUPABASE_URL=your-project-url\n' +
-    'VITE_SUPABASE_ANON_KEY=your-anon-key\n\n' +
-    'Using fallback values for now. The app will work but not connect to your Supabase instance.'
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error(
+    'Missing Supabase environment variables. Please add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY to your .env file.'
   );
+  
+  // For development purposes only - using placeholder values
+  // In production, you should always use actual Supabase credentials
+  const fallbackUrl = 'https://your-project-url.supabase.co';
+  const fallbackKey = 'your-anon-key';
+  
+  console.warn(
+    `⚠️ Using fallback Supabase values for development. The app will work but not connect to your Supabase instance.`
+  );
+  
+  // Set fallback values for development
+  if (!supabaseUrl) supabaseUrl = fallbackUrl;
+  if (!supabaseAnonKey) supabaseAnonKey = fallbackKey;
 }
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);

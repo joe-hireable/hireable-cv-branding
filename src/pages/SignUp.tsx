@@ -5,7 +5,6 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import HireableLogo from "@/components/branding/HireableLogo";
 import { supabase } from "@/lib/supabase";
@@ -28,6 +27,14 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
+      // Check if we're using fallback values (development mode)
+      if (supabase.supabaseUrl.includes('your-project-url')) {
+        toast.error("Cannot connect to Supabase with placeholder credentials. Please set up your .env file with real Supabase credentials.");
+        console.error("Using placeholder Supabase credentials. Please set up your .env file with real Supabase credentials.");
+        setIsLoading(false);
+        return;
+      }
+      
       // Sign up with Supabase directly to handle email confirmation
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -38,7 +45,8 @@ const SignUp = () => {
       });
       
       if (error) {
-        toast.error(error.message);
+        console.error("Supabase signup error:", error);
+        toast.error(error.message || "Failed to create account");
       } else {
         toast.success("Account created successfully!");
         
@@ -51,7 +59,8 @@ const SignUp = () => {
         }
       }
     } catch (error: any) {
-      toast.error(error.message || "An error occurred during sign up");
+      console.error("Signup error:", error);
+      toast.error("Failed to create account. Please check your connection and try again.");
     } finally {
       setIsLoading(false);
     }
