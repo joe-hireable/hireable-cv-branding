@@ -27,6 +27,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
 
+// Export these values so they can be used in other files
+export { supabaseUrl, supabaseAnonKey };
+
 // Helper function to get the current user
 export const getCurrentUser = async () => {
   const { data: { user } } = await supabase.auth.getUser();
