@@ -23,6 +23,16 @@ const CVEditor = () => {
     achievements: true
   });
   
+  // Define the default order of sections
+  const [sectionOrder, setSectionOrder] = useState([
+    "personalDetails",
+    "profile",
+    "experience",
+    "skills",
+    "education",
+    "achievements"
+  ]);
+  
   const handleUploadComplete = () => {
     setActiveTab("preview");
   };
@@ -65,6 +75,7 @@ const CVEditor = () => {
                 <CVPreview 
                   isAnonymized={isAnonymized}
                   sectionVisibility={sectionVisibility}
+                  sectionOrder={sectionOrder}
                 />
               </Card>
             </div>
@@ -74,8 +85,10 @@ const CVEditor = () => {
                 <CVSettings
                   isAnonymized={isAnonymized}
                   sectionVisibility={sectionVisibility}
+                  sectionOrder={sectionOrder}
                   onAnonymizeChange={setIsAnonymized}
                   onSectionVisibilityChange={toggleSectionVisibility}
+                  onSectionOrderChange={setSectionOrder}
                   onContinueClick={handleContinueToGenerate}
                 />
               </Card>

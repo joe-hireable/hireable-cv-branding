@@ -15,7 +15,7 @@ const CVSectionItem: React.FC<CVSectionItemProps> = ({
 }) => {
   return (
     <div 
-      className={`border rounded p-2 flex items-center justify-between bg-background cursor-move transition-colors ${
+      className={`border rounded p-2 flex items-center justify-between bg-background transition-colors ${
         isDragging ? 'border-primary bg-primary/10' : ''
       }`}
     >

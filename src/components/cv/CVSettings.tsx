@@ -5,6 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import CVSectionItem from './CVSectionItem';
+import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 
 interface CVSettingsProps {
   isAnonymized: boolean;
@@ -19,6 +20,8 @@ interface CVSettingsProps {
   onAnonymizeChange: (checked: boolean) => void;
   onSectionVisibilityChange: (section: string) => void;
   onContinueClick: () => void;
+  sectionOrder: string[];
+  onSectionOrderChange: (newOrder: string[]) => void;
 }
 
 const CVSettings: React.FC<CVSettingsProps> = ({
@@ -26,8 +29,29 @@ const CVSettings: React.FC<CVSettingsProps> = ({
   sectionVisibility,
   onAnonymizeChange,
   onSectionVisibilityChange,
-  onContinueClick
+  onContinueClick,
+  sectionOrder,
+  onSectionOrderChange
 }) => {
+  const onDragEnd = (result: DropResult) => {
+    const { destination, source } = result;
+    
+    // If there's no destination or the item is dropped in the same place, do nothing
+    if (!destination || 
+        (destination.droppableId === source.droppableId && 
+         destination.index === source.index)) {
+      return;
+    }
+    
+    // Create a new array with the updated order
+    const newSectionOrder = Array.from(sectionOrder);
+    const [movedSection] = newSectionOrder.splice(source.index, 1);
+    newSectionOrder.splice(destination.index, 0, movedSection);
+    
+    // Update the state with the new order
+    onSectionOrderChange(newSectionOrder);
+  };
+
   return (
     <div>
       <h3 className="text-lg font-medium mb-4">CV Settings</h3>
@@ -88,6 +112,14 @@ const CVSettings: React.FC<CVSettingsProps> = ({
                 onCheckedChange={() => onSectionVisibilityChange('education')}
               />
             </div>
+            <div className="flex items-center justify-between">
+              <Label htmlFor="toggle-achievements">Achievements</Label>
+              <Switch 
+                id="toggle-achievements" 
+                checked={sectionVisibility.achievements} 
+                onCheckedChange={() => onSectionVisibilityChange('achievements')}
+              />
+            </div>
           </div>
         </div>
         
@@ -96,23 +128,42 @@ const CVSettings: React.FC<CVSettingsProps> = ({
         <div>
           <h4 className="font-medium mb-2">Section Order</h4>
           <p className="text-sm text-muted-foreground mb-2">Drag sections to reorder</p>
-          <div className="space-y-2">
-            {sectionVisibility.personalDetails && (
-              <CVSectionItem title="Personal Details" />
-            )}
-            {sectionVisibility.profile && (
-              <CVSectionItem title="Profile" />
-            )}
-            {sectionVisibility.experience && (
-              <CVSectionItem title="Experience" />
-            )}
-            {sectionVisibility.skills && (
-              <CVSectionItem title="Skills" />
-            )}
-            {sectionVisibility.education && (
-              <CVSectionItem title="Education" />
-            )}
-          </div>
+          
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="sections">
+              {(provided) => (
+                <div 
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  className="space-y-2"
+                >
+                  {sectionOrder.map((section, index) => {
+                    // Only render visible sections
+                    if (sectionVisibility[section as keyof typeof sectionVisibility]) {
+                      return (
+                        <Draggable key={section} draggableId={section} index={index}>
+                          {(provided, snapshot) => (
+                            <div
+                              ref={provided.innerRef}
+                              {...provided.draggableProps}
+                            >
+                              <CVSectionItem 
+                                title={section.charAt(0).toUpperCase() + section.slice(1)} 
+                                isDragging={snapshot.isDragging}
+                                dragHandleProps={provided.dragHandleProps}
+                              />
+                            </div>
+                          )}
+                        </Draggable>
+                      );
+                    }
+                    return null;
+                  })}
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </div>
       </div>
       
