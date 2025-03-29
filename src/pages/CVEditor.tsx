@@ -11,7 +11,6 @@ import CVChat from "@/components/cv/CVChat";
 import ChatButton from "@/components/cv/ChatButton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useDefaultCVSettings, SectionVisibilityType } from "@/hooks/useDefaultCVSettings";
-import { CVSection } from "@/types/cv";
 
 const CVEditor = () => {
   const navigate = useNavigate();
