@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { Eye } from "lucide-react";
@@ -14,6 +15,13 @@ interface CVPreviewProps {
     education: boolean;
     skills: boolean;
     achievements: boolean;
+    languages?: boolean;
+    certifications?: boolean;
+    professionalMemberships?: boolean;
+    earlierCareer?: boolean;
+    publications?: boolean;
+    addDetails?: boolean;
+    [key: string]: boolean | undefined;
   };
   onContinueClick: () => void;
 }
@@ -139,6 +147,35 @@ const CVPreview: React.FC<CVPreviewProps> = ({
             </div>
             <p className="text-muted-foreground">University of Manchester</p>
             <p className="text-sm mt-2">First Class Honours</p>
+          </div>
+        </div>
+      )}
+      
+      {sectionVisibility.languages && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-medium">Languages</h3>
+            <Button variant="outline" size="sm">Optimize with AI</Button>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <div className="bg-primary/10 px-3 py-1 rounded-full text-sm">English (Native)</div>
+            <div className="bg-primary/10 px-3 py-1 rounded-full text-sm">French (Intermediate)</div>
+            <div className="bg-primary/10 px-3 py-1 rounded-full text-sm">Spanish (Basic)</div>
+          </div>
+        </div>
+      )}
+
+      {sectionVisibility.certifications && (
+        <div className="mb-6">
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="text-lg font-medium">Certifications</h3>
+            <Button variant="outline" size="sm">Optimize with AI</Button>
+          </div>
+          <div className="space-y-2">
+            <div className="border rounded-md p-3">
+              <h4 className="font-medium">AWS Certified Solutions Architect</h4>
+              <p className="text-sm text-muted-foreground">Amazon Web Services, 2021</p>
+            </div>
           </div>
         </div>
       )}

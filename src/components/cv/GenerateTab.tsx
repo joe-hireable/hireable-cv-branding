@@ -5,10 +5,12 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { FileDown, FileUp } from "lucide-react";
+import { FileDown, FileUp, ChevronDown, ChevronUp } from "lucide-react";
 import CVSectionItem from './CVSectionItem';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { CVSection } from "@/types/cv";
 
 interface GenerateTabProps {
   onBackClick: () => void;
@@ -38,6 +40,7 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
 }) => {
   const [clientLogo, setClientLogo] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("export-options");
+  const [isVisibilityOpen, setIsVisibilityOpen] = useState(false);
 
   const handleClientLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -67,6 +70,22 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
     
     // Update the state with the new order
     onSectionOrderChange(newSectionOrder);
+  };
+
+  // CV sections from data model
+  const cvSections: Record<string, string> = {
+    personalDetails: "Personal Details",
+    profileStatement: "Profile",
+    experience: "Experience",
+    education: "Education",
+    skills: "Skills",
+    achievements: "Achievements",
+    languages: "Languages",
+    certifications: "Certifications",
+    professionalMemberships: "Professional Memberships",
+    earlierCareer: "Earlier Career",
+    publications: "Publications",
+    addDetails: "Additional Details"
   };
 
   return (
@@ -120,6 +139,35 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
                 </div>
                 <Switch defaultChecked={false} />
               </div>
+
+              <Separator className="my-2" />
+              
+              <Collapsible
+                open={isVisibilityOpen}
+                onOpenChange={setIsVisibilityOpen}
+                className="w-full border rounded-md p-2"
+              >
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium">Edit Section Visibility</h4>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="p-0 h-8 w-8">
+                      {isVisibilityOpen ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <CollapsibleContent className="mt-2 space-y-2">
+                  {Object.entries(cvSections).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between py-1">
+                      <Label htmlFor={`toggle-${key}`} className="text-sm">{label}</Label>
+                      <Switch 
+                        id={`toggle-${key}`} 
+                        checked={sectionVisibility[key as keyof typeof sectionVisibility]} 
+                        onCheckedChange={() => onSectionVisibilityChange(key)}
+                      />
+                    </div>
+                  ))}
+                </CollapsibleContent>
+              </Collapsible>
 
               <Separator className="my-2" />
               
@@ -186,54 +234,16 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
               <div>
                 <h4 className="font-medium mb-2">Section Visibility</h4>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="toggle-personal">Personal Details</Label>
-                    <Switch 
-                      id="toggle-personal" 
-                      checked={sectionVisibility.personalDetails} 
-                      onCheckedChange={() => onSectionVisibilityChange('personalDetails')}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="toggle-profile">Profile</Label>
-                    <Switch 
-                      id="toggle-profile" 
-                      checked={sectionVisibility.profile} 
-                      onCheckedChange={() => onSectionVisibilityChange('profile')}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="toggle-experience">Experience</Label>
-                    <Switch 
-                      id="toggle-experience" 
-                      checked={sectionVisibility.experience} 
-                      onCheckedChange={() => onSectionVisibilityChange('experience')}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="toggle-skills">Skills</Label>
-                    <Switch 
-                      id="toggle-skills" 
-                      checked={sectionVisibility.skills} 
-                      onCheckedChange={() => onSectionVisibilityChange('skills')}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="toggle-education">Education</Label>
-                    <Switch 
-                      id="toggle-education" 
-                      checked={sectionVisibility.education} 
-                      onCheckedChange={() => onSectionVisibilityChange('education')}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="toggle-achievements">Achievements</Label>
-                    <Switch 
-                      id="toggle-achievements" 
-                      checked={sectionVisibility.achievements} 
-                      onCheckedChange={() => onSectionVisibilityChange('achievements')}
-                    />
-                  </div>
+                  {Object.entries(cvSections).map(([key, label]) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <Label htmlFor={`toggle-settings-${key}`}>{label}</Label>
+                      <Switch 
+                        id={`toggle-settings-${key}`} 
+                        checked={sectionVisibility[key as keyof typeof sectionVisibility]} 
+                        onCheckedChange={() => onSectionVisibilityChange(key)}
+                      />
+                    </div>
+                  ))}
                 </div>
               </div>
               
@@ -262,7 +272,7 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
                                     {...provided.draggableProps}
                                   >
                                     <CVSectionItem 
-                                      title={section.charAt(0).toUpperCase() + section.slice(1)} 
+                                      title={cvSections[section] || section.charAt(0).toUpperCase() + section.slice(1)} 
                                       isDragging={snapshot.isDragging}
                                       dragHandleProps={provided.dragHandleProps}
                                     />

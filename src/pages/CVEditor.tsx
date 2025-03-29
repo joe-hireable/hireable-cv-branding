@@ -10,6 +10,7 @@ import CVPreview from "@/components/cv/CVPreview";
 import CVChat from "@/components/cv/CVChat";
 import ChatButton from "@/components/cv/ChatButton";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { CVSection } from "@/types/cv";
 
 const CVEditor = () => {
   const navigate = useNavigate();
@@ -22,7 +23,13 @@ const CVEditor = () => {
     experience: true,
     education: true,
     skills: true,
-    achievements: true
+    achievements: true,
+    languages: true,
+    certifications: true,
+    professionalMemberships: true,
+    earlierCareer: false,
+    publications: true,
+    addDetails: true
   });
   
   // Define the default order of sections
@@ -32,7 +39,12 @@ const CVEditor = () => {
     "experience",
     "skills",
     "education",
-    "achievements"
+    "achievements",
+    "languages",
+    "certifications",
+    "professionalMemberships",
+    "publications",
+    "addDetails"
   ]);
   
   const handleUploadComplete = () => {
