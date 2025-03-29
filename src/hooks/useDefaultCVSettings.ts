@@ -1,5 +1,8 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
+import { toast } from 'sonner';
+import { updateDefaultCVSettings } from '@/services/profileService';
 
 // Define a specific type for sectionVisibility that matches the structure in CVEditor.tsx
 export interface SectionVisibilityType {
@@ -38,29 +41,81 @@ export function useDefaultCVSettings() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load default settings from localStorage on mount
-    const loadDefaultSettings = () => {
+    // Load default settings from Supabase on mount
+    const loadDefaultSettings = async () => {
+      try {
+        const user = await supabase.auth.getUser();
+        
+        if (user.data.user) {
+          const { data, error } = await supabase
+            .from('profiles')
+            .select('default_anonymize, default_section_visibility, default_section_order')
+            .eq('id', user.data.user.id)
+            .single();
+          
+          if (error) throw error;
+          
+          if (data) {
+            // Check if we have stored settings in Supabase
+            if (data.default_section_visibility && data.default_section_order) {
+              setDefaultSettings({
+                isAnonymized: data.default_anonymize || false,
+                sectionVisibility: data.default_section_visibility as SectionVisibilityType,
+                sectionOrder: data.default_section_order as string[]
+              });
+            } else {
+              // Fall back to localStorage if Supabase doesn't have settings yet
+              loadFromLocalStorage();
+            }
+          }
+        } else {
+          // Not logged in, use localStorage
+          loadFromLocalStorage();
+        }
+      } catch (error) {
+        console.error('Failed to load default CV settings from Supabase:', error);
+        loadFromLocalStorage();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const loadFromLocalStorage = () => {
       try {
         const savedSettings = localStorage.getItem('cv-default-settings');
         if (savedSettings) {
           setDefaultSettings(JSON.parse(savedSettings));
         }
       } catch (error) {
-        console.error('Failed to load default CV settings:', error);
-      } finally {
-        setIsLoading(false);
+        console.error('Failed to load default CV settings from localStorage:', error);
       }
     };
 
     loadDefaultSettings();
   }, []);
 
-  const saveDefaultSettings = (settings: DefaultCVSettings) => {
+  const saveDefaultSettings = async (settings: DefaultCVSettings) => {
     try {
+      // Save to localStorage as a fallback
       localStorage.setItem('cv-default-settings', JSON.stringify(settings));
+      
+      // Save to Supabase if logged in
+      const user = await supabase.auth.getUser();
+      
+      if (user.data.user) {
+        const { error } = await updateDefaultCVSettings({
+          default_anonymize: settings.isAnonymized,
+          default_section_visibility: settings.sectionVisibility,
+          default_section_order: settings.sectionOrder
+        });
+        
+        if (error) throw error;
+      }
+      
       setDefaultSettings(settings);
     } catch (error) {
       console.error('Failed to save default CV settings:', error);
+      toast.error('Failed to save default settings');
     }
   };
 
