@@ -10,7 +10,7 @@ import CVPreview from "@/components/cv/CVPreview";
 import CVChat from "@/components/cv/CVChat";
 import ChatButton from "@/components/cv/ChatButton";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useDefaultCVSettings } from "@/hooks/useDefaultCVSettings";
+import { useDefaultCVSettings, SectionVisibilityType } from "@/hooks/useDefaultCVSettings";
 import { CVSection } from "@/types/cv";
 
 const CVEditor = () => {
@@ -18,7 +18,7 @@ const CVEditor = () => {
   const [currentStep, setCurrentStep] = useState("upload");
   const [showChat, setShowChat] = useState(false);
   const [isAnonymized, setIsAnonymized] = useState(false);
-  const [sectionVisibility, setSectionVisibility] = useState({
+  const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityType>({
     personalDetails: true,
     profile: true,
     experience: true,
@@ -54,7 +54,13 @@ const CVEditor = () => {
     // Apply default settings if available
     if (defaultSettings) {
       setIsAnonymized(defaultSettings.isAnonymized);
-      setSectionVisibility(defaultSettings.sectionVisibility);
+      
+      // Make sure we properly type the section visibility from defaultSettings
+      setSectionVisibility(prevState => ({
+        ...prevState,
+        ...defaultSettings.sectionVisibility
+      }));
+      
       setSectionOrder(defaultSettings.sectionOrder);
     }
   }, [defaultSettings]);
@@ -64,10 +70,10 @@ const CVEditor = () => {
   };
 
   const toggleSectionVisibility = (section: string) => {
-    setSectionVisibility({
-      ...sectionVisibility,
-      [section]: !sectionVisibility[section as keyof typeof sectionVisibility]
-    });
+    setSectionVisibility(prevState => ({
+      ...prevState,
+      [section]: !prevState[section as keyof SectionVisibilityType]
+    }));
   };
 
   const handleContinueToGenerate = () => {

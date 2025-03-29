@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -6,17 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import CVSectionItem from './CVSectionItem';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
+import { SectionVisibilityType } from "@/hooks/useDefaultCVSettings";
 
 interface CVSettingsProps {
   isAnonymized: boolean;
-  sectionVisibility: {
-    personalDetails: boolean;
-    profile: boolean;
-    experience: boolean;
-    education: boolean;
-    skills: boolean;
-    achievements: boolean;
-  };
+  sectionVisibility: SectionVisibilityType;
   onAnonymizeChange: (checked: boolean) => void;
   onSectionVisibilityChange: (section: string) => void;
   onContinueClick: () => void;

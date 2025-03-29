@@ -10,19 +10,12 @@ import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautif
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
-import { useDefaultCVSettings } from "@/hooks/useDefaultCVSettings";
+import { useDefaultCVSettings, SectionVisibilityType } from "@/hooks/useDefaultCVSettings";
 
 interface GenerateTabProps {
   onBackClick: () => void;
   isAnonymized: boolean;
-  sectionVisibility: {
-    personalDetails: boolean;
-    profile: boolean;
-    experience: boolean;
-    education: boolean;
-    skills: boolean;
-    achievements: boolean;
-  };
+  sectionVisibility: SectionVisibilityType;
   sectionOrder: string[];
   onAnonymizeChange: (checked: boolean) => void;
   onSectionVisibilityChange: (section: string) => void;

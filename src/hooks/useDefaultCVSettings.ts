@@ -1,15 +1,31 @@
 
 import { useState, useEffect } from 'react';
 
+// Define a more specific type for sectionVisibility that matches the structure in CVEditor.tsx
+export interface SectionVisibilityType {
+  personalDetails: boolean;
+  profile: boolean;
+  experience: boolean;
+  education: boolean;
+  skills: boolean;
+  achievements: boolean;
+  languages: boolean;
+  certifications: boolean;
+  professionalMemberships: boolean;
+  earlierCareer: boolean;
+  publications: boolean;
+  addDetails: boolean;
+}
+
 export interface DefaultCVSettings {
   isAnonymized: boolean;
-  sectionVisibility: Record<string, boolean>;
+  sectionVisibility: SectionVisibilityType;
   sectionOrder: string[];
 }
 
 interface ApplySettingsOptions {
   isAnonymized: boolean;
-  sectionVisibility: Record<string, boolean>;
+  sectionVisibility: SectionVisibilityType;
   sectionOrder: string[];
   onAnonymizeChange: (value: boolean) => void;
   onSectionVisibilityChange: (section: string) => void;
@@ -57,7 +73,7 @@ export function useDefaultCVSettings() {
 
     // Apply default section visibility settings
     Object.entries(defaultSettings.sectionVisibility).forEach(([key, value]) => {
-      if (options.sectionVisibility[key] !== value) {
+      if (options.sectionVisibility[key as keyof SectionVisibilityType] !== value) {
         options.onSectionVisibilityChange(key);
       }
     });
