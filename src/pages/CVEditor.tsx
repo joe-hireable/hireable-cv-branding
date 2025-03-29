@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,11 +10,13 @@ import CVChat from "@/components/cv/CVChat";
 import ChatButton from "@/components/cv/ChatButton";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useDefaultCVSettings, SectionVisibilityType } from "@/hooks/useDefaultCVSettings";
+import { ParsedCVData } from "@/types/cv";
 
 const CVEditor = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState("upload");
   const [showChat, setShowChat] = useState(false);
+  const [parsedCvData, setParsedCvData] = useState<ParsedCVData | null>(null);
   const [isAnonymized, setIsAnonymized] = useState(false);
   const [sectionVisibility, setSectionVisibility] = useState<SectionVisibilityType>({
     personalDetails: true,
@@ -64,7 +65,8 @@ const CVEditor = () => {
     }
   }, [defaultSettings]);
   
-  const handleUploadComplete = () => {
+  const handleUploadComplete = (data: ParsedCVData) => {
+    setParsedCvData(data);
     setCurrentStep("preview");
   };
 
@@ -103,6 +105,7 @@ const CVEditor = () => {
               <div className="md:col-span-3">
                 <Card className="p-6">
                   <CVPreview 
+                    cvData={parsedCvData}
                     isAnonymized={isAnonymized}
                     sectionVisibility={sectionVisibility}
                     onContinueClick={handleContinueToGenerate}

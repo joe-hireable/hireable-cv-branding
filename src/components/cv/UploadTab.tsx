@@ -1,11 +1,13 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { FileUp, FileText, File } from "lucide-react";
+import { toast } from "sonner";
+import { ParsedCVData, GCFResponse } from '@/types/cv'; // Import both types
+import { supabase } from '@/lib/supabase'; // Import supabase client
 
 interface UploadTabProps {
-  onUploadComplete: () => void;
+  onUploadComplete: (parsedData: ParsedCVData) => void;
 }
 
 const UploadTab: React.FC<UploadTabProps> = ({ onUploadComplete }) => {
@@ -29,14 +31,90 @@ const UploadTab: React.FC<UploadTabProps> = ({ onUploadComplete }) => {
     event.preventDefault();
   };
 
-  const handleUpload = () => {
-    if (!uploadedFile) return;
-    
+  const handleUpload = async () => {
+    if (!uploadedFile) {
+      toast.error("Please select a CV file first.");
+      return;
+    }
+
     setIsUploading(true);
-    setTimeout(() => {
+
+    // --- Get GCF URL from environment variables ---
+    const gcfUrl = import.meta.env.VITE_CV_OPTIMIZER_GCF_URL; 
+    // --- ---
+
+    // --- Check if the environment variable is set ---
+    if (!gcfUrl) {
+        toast.error("CV Optimizer Function URL is not configured in environment variables.");
+        console.error("Missing VITE_CV_OPTIMIZER_GCF_URL in your .env file.");
+        setIsUploading(false);
+        return;
+    }
+    // --- ---
+
+    try {
+      // Get Supabase session and access token
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
+      if (sessionError || !sessionData.session) {
+        toast.error("Authentication error: Could not get user session.");
+        console.error("Session Error:", sessionError);
+        setIsUploading(false);
+        return;
+      }
+      const accessToken = sessionData.session.access_token;
+      // --- ---
+
+      const formData = new FormData();
+      formData.append('cv_file', uploadedFile);
+      formData.append('task', 'parsing'); 
+      
+      const response = await fetch(gcfUrl, { 
+        method: 'POST',
+        body: formData,
+        headers: { 
+          // Add Supabase access token for authentication
+          'Authorization': `Bearer ${accessToken}` 
+        }
+      });
+
+      // --- Error Handling (remains the same) ---
+      if (!response.ok) {
+        let errorMsg = `Upload failed. Status: ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.message || errorData.error || JSON.stringify(errorData);
+          console.error("GCF Error Response:", errorData);
+        } catch (jsonError) {
+          errorMsg = `${errorMsg} - ${response.statusText}`;
+          console.error("GCF Non-JSON Error Response:", await response.text());
+        }
+        throw new Error(errorMsg);
+      }
+      // --- ---
+
+      // --- Success Handling (remains the same) ---
+      const result = await response.json() as GCFResponse; // Type assertion
+
+      if (result.status === 'error' || result.status === 'partial') {
+         const gcfErrors = result.errors?.map((e: any) => e.message).join(', ') || 'Unknown error from GCF.';
+         console.error("GCF Processing Error:", result.errors);
+         toast.error(`Processing Error: ${gcfErrors}`);
+      } else if (result.status === 'success' && result.data) {
+         toast.success("CV processed successfully!");
+         console.log("Parsed Data:", result.data);
+         onUploadComplete(result.data); 
+      } else {
+         console.warn("Unexpected GCF success response format:", result);
+         toast.warning("Processing complete, but response format unexpected.");
+      }
+      // --- ---
+
+    } catch (error: any) {
+      console.error("Error uploading/processing CV:", error);
+      toast.error(`An error occurred: ${error.message}`);
+    } finally {
       setIsUploading(false);
-      onUploadComplete();
-    }, 1500);
+    }
   };
 
   const getFileIcon = (mimeType: string) => {

@@ -1,4 +1,3 @@
-
 // CV Data Model based on the provided schema
 export interface CVLink {
   title: string | null;
@@ -112,4 +111,60 @@ export interface BackendResponse<T> {
   status: "success" | "error" | "partial";
   errors: string[] | null;
   data: T;
+}
+
+// Define interfaces based on the GCF parsing response structure
+
+interface Location {
+  city: string | null;
+  country: string | null;
+  postalCode: string | null;
+}
+
+interface Skill {
+  name: string;
+  proficiency: string; // Consider using an enum like 'Beginner' | 'Intermediate' | 'Advanced'
+  skillType: string;   // Consider using an enum like 'hard' | 'soft'
+}
+
+interface Experience {
+  company: string;
+  start: string; // Consider using Date type if appropriate after parsing
+  end: string | null;
+  current: boolean;
+  summary: string;
+  highlights: string[];
+}
+
+// Define interfaces for other sections if their structure becomes known
+// interface Education { ... }
+// interface Certification { ... }
+// ... etc ...
+
+export interface ParsedCVData {
+  firstName: string;
+  surname: string;
+  email: string;
+  phone: string;
+  links: string[]; 
+  location: Location;
+  headline: string;
+  profileStatement: string;
+  skills: Skill[];
+  achievements: string[];
+  languages: any[]; // Use a specific type if structure is known
+  experience: Experience[];
+  education: any[]; // Use a specific type if structure is known
+  certifications: any[]; // Use a specific type if structure is known
+  professionalMemberships: any[]; // Use a specific type if structure is known
+  earlierCareer: any[]; // Use a specific type if structure is known
+  publications: any[]; // Use a specific type if structure is known
+  addDetails: string[];
+}
+
+// Define the overall structure of the GCF response
+export interface GCFResponse {
+    status: "success" | "error" | "partial";
+    errors: { code: string; message: string; field?: string; severity?: string; }[] | null;
+    data: ParsedCVData | null; // Use the specific type here
 }
