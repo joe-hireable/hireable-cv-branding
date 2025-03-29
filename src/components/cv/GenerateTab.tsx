@@ -1,16 +1,16 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
-import { FileDown, FileUp, ChevronDown, ChevronUp } from "lucide-react";
+import { FileDown, FileUp, ChevronDown, ChevronUp, Save } from "lucide-react";
 import CVSectionItem from './CVSectionItem';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { CVSection } from "@/types/cv";
+import { toast } from "sonner";
+import { useDefaultCVSettings } from "@/hooks/useDefaultCVSettings";
 
 interface GenerateTabProps {
   onBackClick: () => void;
@@ -41,6 +41,20 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
   const [clientLogo, setClientLogo] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("export-options");
   const [isVisibilityOpen, setIsVisibilityOpen] = useState(false);
+  const { defaultSettings, saveDefaultSettings, applyDefaultSettings } = useDefaultCVSettings();
+
+  useEffect(() => {
+    if (defaultSettings) {
+      applyDefaultSettings({
+        isAnonymized,
+        sectionVisibility,
+        sectionOrder,
+        onAnonymizeChange,
+        onSectionVisibilityChange,
+        onSectionOrderChange
+      });
+    }
+  }, [defaultSettings]);
 
   const handleClientLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -56,23 +70,28 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
   const onDragEnd = (result: DropResult) => {
     const { destination, source } = result;
     
-    // If there's no destination or the item is dropped in the same place, do nothing
     if (!destination || 
         (destination.droppableId === source.droppableId && 
          destination.index === source.index)) {
       return;
     }
     
-    // Create a new array with the updated order
     const newSectionOrder = Array.from(sectionOrder);
     const [movedSection] = newSectionOrder.splice(source.index, 1);
     newSectionOrder.splice(destination.index, 0, movedSection);
     
-    // Update the state with the new order
     onSectionOrderChange(newSectionOrder);
   };
 
-  // CV sections from data model
+  const handleSaveDefaults = () => {
+    saveDefaultSettings({
+      isAnonymized,
+      sectionVisibility,
+      sectionOrder
+    });
+    toast.success("Default CV settings saved successfully");
+  };
+
   const cvSections: Record<string, string> = {
     personalDetails: "Personal Details",
     profileStatement: "Profile",
@@ -262,7 +281,6 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
                         className="space-y-2"
                       >
                         {sectionOrder.map((section, index) => {
-                          // Only render visible sections
                           if (sectionVisibility[section as keyof typeof sectionVisibility]) {
                             return (
                               <Draggable key={section} draggableId={section} index={index}>
@@ -289,6 +307,15 @@ const GenerateTab: React.FC<GenerateTabProps> = ({
                   </Droppable>
                 </DragDropContext>
               </div>
+
+              <Button 
+                variant="outline" 
+                className="w-full flex items-center justify-center gap-2" 
+                onClick={handleSaveDefaults}
+              >
+                <Save size={16} />
+                Save as Default Settings
+              </Button>
             </div>
           </div>
         </TabsContent>

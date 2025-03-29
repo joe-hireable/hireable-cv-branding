@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
@@ -10,6 +10,7 @@ import CVPreview from "@/components/cv/CVPreview";
 import CVChat from "@/components/cv/CVChat";
 import ChatButton from "@/components/cv/ChatButton";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { useDefaultCVSettings } from "@/hooks/useDefaultCVSettings";
 import { CVSection } from "@/types/cv";
 
 const CVEditor = () => {
@@ -46,6 +47,17 @@ const CVEditor = () => {
     "publications",
     "addDetails"
   ]);
+
+  const { defaultSettings } = useDefaultCVSettings();
+  
+  useEffect(() => {
+    // Apply default settings if available
+    if (defaultSettings) {
+      setIsAnonymized(defaultSettings.isAnonymized);
+      setSectionVisibility(defaultSettings.sectionVisibility);
+      setSectionOrder(defaultSettings.sectionOrder);
+    }
+  }, [defaultSettings]);
   
   const handleUploadComplete = () => {
     setCurrentStep("preview");
