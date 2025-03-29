@@ -1,7 +1,6 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Eye, MessageSquare } from "lucide-react";
+import { Eye } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,11 +15,13 @@ interface CVPreviewProps {
     skills: boolean;
     achievements: boolean;
   };
+  onContinueClick: () => void;
 }
 
 const CVPreview: React.FC<CVPreviewProps> = ({ 
   isAnonymized, 
-  sectionVisibility 
+  sectionVisibility,
+  onContinueClick
 }) => {
   return (
     <div className="space-y-6">
@@ -30,10 +31,6 @@ const CVPreview: React.FC<CVPreviewProps> = ({
           <Button variant="outline" size="sm">
             <Eye size={16} className="mr-2" />
             Preview
-          </Button>
-          <Button variant="outline" size="sm">
-            <MessageSquare size={16} className="mr-2" />
-            Edit with Chat
           </Button>
         </div>
       </div>
@@ -145,6 +142,12 @@ const CVPreview: React.FC<CVPreviewProps> = ({
           </div>
         </div>
       )}
+      
+      <div className="flex justify-end mt-8">
+        <Button onClick={onContinueClick} size="lg">
+          Continue to Generate & Export
+        </Button>
+      </div>
     </div>
   );
 };

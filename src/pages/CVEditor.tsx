@@ -2,17 +2,19 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UploadTab from "@/components/cv/UploadTab";
 import GenerateTab from "@/components/cv/GenerateTab";
 import CVPreview from "@/components/cv/CVPreview";
-import CVSettings from "@/components/cv/CVSettings";
+import CVChat from "@/components/cv/CVChat";
+import ChatButton from "@/components/cv/ChatButton";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const CVEditor = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState("upload");
+  const [currentStep, setCurrentStep] = useState("upload");
+  const [showChat, setShowChat] = useState(false);
   const [isAnonymized, setIsAnonymized] = useState(false);
   const [sectionVisibility, setSectionVisibility] = useState({
     personalDetails: true,
@@ -34,7 +36,7 @@ const CVEditor = () => {
   ]);
   
   const handleUploadComplete = () => {
-    setActiveTab("preview");
+    setCurrentStep("preview");
   };
 
   const toggleSectionVisibility = (section: string) => {
@@ -45,7 +47,11 @@ const CVEditor = () => {
   };
 
   const handleContinueToGenerate = () => {
-    setActiveTab("generate");
+    setCurrentStep("generate");
+  };
+  
+  const toggleChat = () => {
+    setShowChat(!showChat);
   };
   
   return (
@@ -57,48 +63,53 @@ const CVEditor = () => {
         <h1 className="text-3xl font-bold">CV Editor</h1>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid grid-cols-3 mb-4">
-          <TabsTrigger value="upload">Upload</TabsTrigger>
-          <TabsTrigger value="preview">Preview & Edit</TabsTrigger>
-          <TabsTrigger value="generate">Generate & Export</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="upload">
-          <UploadTab onUploadComplete={handleUploadComplete} />
-        </TabsContent>
-        
-        <TabsContent value="preview">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="md:col-span-2">
-              <Card className="p-6">
-                <CVPreview 
-                  isAnonymized={isAnonymized}
-                  sectionVisibility={sectionVisibility}
-                />
-              </Card>
+      <TooltipProvider>
+        <div className="relative">
+          {currentStep === "upload" && (
+            <UploadTab onUploadComplete={handleUploadComplete} />
+          )}
+          
+          {currentStep === "preview" && (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="md:col-span-3">
+                <Card className="p-6">
+                  <CVPreview 
+                    isAnonymized={isAnonymized}
+                    sectionVisibility={sectionVisibility}
+                    onContinueClick={handleContinueToGenerate}
+                  />
+                </Card>
+              </div>
             </div>
-            
-            <div>
-              <Card className="p-6">
-                <CVSettings
-                  isAnonymized={isAnonymized}
-                  sectionVisibility={sectionVisibility}
-                  sectionOrder={sectionOrder}
-                  onAnonymizeChange={setIsAnonymized}
-                  onSectionVisibilityChange={toggleSectionVisibility}
-                  onSectionOrderChange={setSectionOrder}
-                  onContinueClick={handleContinueToGenerate}
-                />
-              </Card>
+          )}
+          
+          {currentStep === "generate" && (
+            <GenerateTab 
+              onBackClick={() => setCurrentStep("preview")}
+              isAnonymized={isAnonymized}
+              sectionVisibility={sectionVisibility}
+              sectionOrder={sectionOrder}
+              onAnonymizeChange={setIsAnonymized}
+              onSectionVisibilityChange={toggleSectionVisibility}
+              onSectionOrderChange={setSectionOrder}
+            />
+          )}
+          
+          {showChat && (
+            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={toggleChat}>
+              <div onClick={(e) => e.stopPropagation()}>
+                <CVChat onClose={toggleChat} />
+              </div>
             </div>
-          </div>
-        </TabsContent>
-        
-        <TabsContent value="generate">
-          <GenerateTab onBackClick={() => setActiveTab("preview")} />
-        </TabsContent>
-      </Tabs>
+          )}
+          
+          {currentStep === "preview" && !showChat && (
+            <div className="fixed bottom-6 right-6 z-40">
+              <ChatButton onClick={toggleChat} />
+            </div>
+          )}
+        </div>
+      </TooltipProvider>
     </div>
   );
 };
