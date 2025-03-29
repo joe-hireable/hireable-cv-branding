@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import HireableLogo from "@/components/branding/HireableLogo";
-import { supabase, supabaseUrl, supabaseAnonKey } from "@/lib/supabase";
+import { supabase, supabaseUrl } from "@/lib/supabase";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
@@ -27,14 +26,6 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      // Check if we're using fallback values (development mode)
-      if (supabaseUrl.includes('your-project-url')) {
-        toast.error("Cannot connect to Supabase with placeholder credentials. Please set up your .env file with real Supabase credentials.");
-        console.error("Using placeholder Supabase credentials. Please set up your .env file with real Supabase credentials.");
-        setIsLoading(false);
-        return;
-      }
-      
       // Sign up with Supabase directly to handle email confirmation
       const { data, error } = await supabase.auth.signUp({
         email,
