@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -16,6 +15,7 @@ const CVEditor = () => {
   const [activeTab, setActiveTab] = useState("upload");
   const [isUploading, setIsUploading] = useState(false);
   const [isAnonymized, setIsAnonymized] = useState(false);
+  const [clientLogo, setClientLogo] = useState<string | null>(null);
   const [sectionVisibility, setSectionVisibility] = useState({
     personalDetails: true,
     profile: true,
@@ -38,6 +38,17 @@ const CVEditor = () => {
       ...sectionVisibility,
       [section]: !sectionVisibility[section as keyof typeof sectionVisibility]
     });
+  };
+
+  const handleClientLogoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setClientLogo(e.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
   
   return (
@@ -375,6 +386,48 @@ const CVEditor = () => {
                     <p className="text-sm text-muted-foreground">Add a branded cover page</p>
                   </div>
                   <Switch defaultChecked={false} />
+                </div>
+
+                <Separator className="my-2" />
+                
+                <div>
+                  <Label htmlFor="client-logo" className="mb-2 block">Client Company Logo</Label>
+                  <div className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors">
+                    {clientLogo ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <img 
+                          src={clientLogo} 
+                          alt="Client logo" 
+                          className="w-32 h-32 object-contain mb-2" 
+                        />
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => setClientLogo(null)}
+                        >
+                          Remove Logo
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <input 
+                          type="file" 
+                          className="hidden" 
+                          id="client-logo" 
+                          accept="image/*"
+                          onChange={handleClientLogoUpload}
+                        />
+                        <label htmlFor="client-logo" className="cursor-pointer flex flex-col items-center">
+                          <FileUp size={24} className="mb-2 text-muted-foreground" />
+                          <span className="text-sm font-medium">Upload Client Logo</span>
+                          <span className="text-xs text-muted-foreground mt-1">PNG, JPG, SVG (max 2MB)</span>
+                        </label>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    This logo will be used for branding the CV for this specific client
+                  </p>
                 </div>
               </div>
               
