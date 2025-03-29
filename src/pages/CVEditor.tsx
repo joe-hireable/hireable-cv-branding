@@ -75,7 +75,6 @@ const CVEditor = () => {
                 <CVPreview 
                   isAnonymized={isAnonymized}
                   sectionVisibility={sectionVisibility}
-                  sectionOrder={sectionOrder}
                 />
               </Card>
             </div>
