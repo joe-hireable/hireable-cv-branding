@@ -15,6 +15,8 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { useAuth } from "@/contexts/AuthContext";
 import Login from "./pages/Login";
 import SignUp from "./pages/SignUp";
+import EmailConfirmation from "./pages/EmailConfirmation";
+import EmailVerified from "./pages/EmailVerified";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +41,8 @@ const AppRoutes = () => {
       <Route path="/" element={<Navigate to="/dashboard" />} />
       <Route path="/login" element={<Login />} />
       <Route path="/signup" element={<SignUp />} />
+      <Route path="/email-confirmation" element={<EmailConfirmation />} />
+      <Route path="/email-verified" element={<EmailVerified />} />
       <Route path="/" element={
         <ProtectedRoute>
           <DashboardLayout />

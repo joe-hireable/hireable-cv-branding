@@ -8,13 +8,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import HireableLogo from "@/components/branding/HireableLogo";
+import { supabase } from "@/lib/supabase";
 
 const SignUp = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { signUp } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -28,19 +28,25 @@ const SignUp = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await signUp(email, password);
+      // Sign up with Supabase directly to handle email confirmation
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/email-verified`,
+        }
+      });
       
       if (error) {
         toast.error(error.message);
       } else {
         toast.success("Account created successfully!");
         
-        // If using Supabase email confirmation
-        if (data.session === null) {
-          toast.info("Check your email for a confirmation link");
-          navigate("/login");
+        // User needs to confirm email
+        if (!data.session) {
+          navigate("/email-confirmation", { state: { email } });
         } else {
-          // Auto-signed in
+          // Auto-signed in (shouldn't happen with email confirmation enabled)
           navigate("/dashboard");
         }
       }
